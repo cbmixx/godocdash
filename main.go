@@ -271,8 +271,8 @@ func grabPackage(wg *sync.WaitGroup, stmt *sql.Stmt, packageName string, url str
 	}
 
 	// skip directories
-	pkgDir := doc.Find("div.pkg-dir").First()
-	if len(pkgDir.Nodes) > 0 {
+	title := doc.Find("h1").First()
+	if !strings.HasPrefix(strings.TrimSpace(title.Text()), "Package") {
 		return
 	}
 	info.IsPackage = true

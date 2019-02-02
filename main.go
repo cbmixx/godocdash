@@ -249,10 +249,20 @@ func grabPackages(stmt *sql.Stmt, host string, packages []string) {
 }
 
 func grabPackage(wg *sync.WaitGroup, stmt *sql.Stmt, packageName string, url string) {
+	var info *packageInfo
+	for i := 0; i < 5; i++ {
+		if info = doGrabPackage(stmt, packageName, url); info.Err != nil {
+			time.Sleep(time.Second * 3)
+		} else {
+			break
+		}
+	}
+	info.Print()
 	defer wg.Done()
+}
 
-	info := &packageInfo{Name: packageName}
-	defer info.Print()
+func doGrabPackage(stmt *sql.Stmt, packageName string, url string) (info *packageInfo) {
+	info = &packageInfo{Name: packageName}
 
 	var err error
 	defer func() {
@@ -294,6 +304,7 @@ func grabPackage(wg *sync.WaitGroup, stmt *sql.Stmt, packageName string, url str
 
 	info.Parse(doc)
 	err = info.WriteInsert(stmt)
+	return
 }
 
 func grabLib(host string) {
